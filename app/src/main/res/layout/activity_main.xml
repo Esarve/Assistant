@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <TextView
+        android:id="@+id/dsplyRslt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Text will Appear here"
+        android:textStyle="bold"
+        android:textSize="30sp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="200dp"/>
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Save"
+        android:layout_above="@+id/btnRec"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="40dp"/>
+    <Button
+        android:id="@+id/btnRec"
+        android:layout_width="140dp"
+        android:layout_height="70dp"
+        android:layout_centerInParent="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="100dp"
+        android:drawableLeft="@drawable/ic_mic_black_24dp"
+        android:text="Hold TO record" />
+
+</RelativeLayout>

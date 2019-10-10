@@ -1,0 +1,10 @@
+model/feat.params
+model/feature_transform
+model/mdef
+model/means
+model/mixture_weights
+model/noisedict
+model/transition_matrices
+model/variances
+test2.dic
+test2.lm.DMP
