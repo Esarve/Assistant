@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
     Button btnRec;
     TextView dispTxt;
     private ToggleButton saveTggBtn;
+    private static final String TAG = "MainActivity";
 
     private boolean boolSaveMode; // Check if save mood is on or not
     int pinNumber;
@@ -118,7 +119,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                                 @Override
                                 public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 
-                                    if (getPinNumber().get(i)=="Choose One"){
+                                    if (getPinNumber().get(i).equals("Choose One")){
                                         nothingSelect =  true;
                                     }
 
@@ -180,22 +181,21 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
 
     @Override
     public void onBeginningOfSpeech() {
-        Log.d("AfterListening", "onBeginningOfSpeech Run");
     }
 
     @Override
     public void onEndOfSpeech() {
-        Log.d("AfterListening", "onEndOfSpeech Run");
+        Log.d(TAG, "onEndOfSpeech: RUN");
     }
 
     @Override
     public void onPartialResult(Hypothesis hypothesis) {
         if (hypothesis == null){
-            Log.d("AfterListening","Hypothesis is NULL");
+            Log.d(TAG, "onPartialResult: Hypothesis is NULL");
             return;
         }
         str = hypothesis.getHypstr();
-        Log.d("AfterListening","Current output: " + str);
+        Log.d(TAG, "onPartialResult: Current Output: + str");
     }
 
     @Override
@@ -210,12 +210,12 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
 
     @Override
     public void onError(Exception e) {
-        Log.d("AfterListening", "onError Run");
+        Log.d(TAG, "onError: ERROR in recognizer");
     }
 
     @Override
     public void onTimeout() {
-        Log.d("AfterListening", "onTimeOut Run");
+        Log.d(TAG, "onTimeout: Recognizer Timeout.");
     }
 
 
@@ -242,7 +242,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                 activityWeakReference.get().dispTxt.setText("Failed to init recognizer " + result);
             }
             else {
-                Log.d("AsyncTask","Successfully Loaded Models");
+                Log.d(TAG, "onPostExecute: Success!");
             }
         }
     }
@@ -271,7 +271,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
 
                 .getRecognizer();
         recognizer.addListener(this);
-        Log.d("setupRecognozer","Recognizer Initialized");
+        Log.d(TAG, "setupRecognizer: Recognizer Initialized.");
 
         File languageModel = new File(assetsDir, "test2.lm.DMP");
         recognizer.addNgramSearch("lm", languageModel);
