@@ -209,7 +209,6 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
         startActivity(intent);
     }
 
-
     private static class SetupSphinx extends AsyncTask<Void, Void, Exception> {
         WeakReference<MainActivity> activityWeakReference;
 

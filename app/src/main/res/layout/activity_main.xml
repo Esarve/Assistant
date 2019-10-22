@@ -24,7 +24,7 @@
     android:layout_height="wrap_content"
     android:layout_marginTop="10dp"
     android:layout_marginStart="10dp"
-    android:id="@+id/openListBtn"
+    android:onClick="AllCommandActivitySwitch"
     android:backgroundTint="@color/colorAccent"
     android:background="@drawable/ic_format_list_bulleted_black_24dp"/>
 
