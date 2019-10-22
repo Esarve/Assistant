@@ -207,7 +207,6 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
     public void AllCommandActivitySwitch(View view) {
         Intent intent = new Intent(this, AllCommandListActivity.class);
         startActivity(intent);
-
     }
 
 
