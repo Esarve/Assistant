@@ -2,9 +2,8 @@ package com.lazycodes.assistant;
 
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -23,32 +22,32 @@ import android.widget.ToggleButton;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.lazycodes.assistant.RecyclerView.AllCommandListActivity;
+import com.lazycodes.assistant.db.Command;
+import com.lazycodes.assistant.db.CommandDatabase;
+
+import java.io.File;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+
 import edu.cmu.pocketsphinx.Assets;
 import edu.cmu.pocketsphinx.Hypothesis;
 import edu.cmu.pocketsphinx.RecognitionListener;
 import edu.cmu.pocketsphinx.SpeechRecognizer;
 import edu.cmu.pocketsphinx.SpeechRecognizerSetup;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.List;
-
 public class MainActivity extends AppCompatActivity implements RecognitionListener {
 
     Button btnRec;
-    TextView dispTxt;
+    TextView dispTxt, emptyTV;
     private ToggleButton saveTggBtn;
-    private static final String TAG = "MainActivity";
-
     private boolean boolSaveMode; // Check if save mood is on or not
     int pinNumber;
     boolean nothingSelect; // Determine if anything is selected on the Spinner or not
-
     String str;
     private static final int PERMISSIONS_REQUEST_RECORD_AUDIO = 1;
     private SpeechRecognizer recognizer;
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,12 +59,11 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
         dispTxt = findViewById(R.id.dsplyRslt);
         saveTggBtn = findViewById(R.id.saveToggleBtn);
 
-
         new SetupSphinx(this).execute();
         btnRec.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                switch (motionEvent.getAction()){
+                switch (motionEvent.getAction()) {
                     case MotionEvent.ACTION_DOWN:
                         recognizer.stop();
                         dispTxt.setText("Listening...");
@@ -73,26 +71,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                         break;
                     case MotionEvent.ACTION_UP:
                         recognizer.stop();
-                        if(boolSaveMode)
-                        {
-/*
-                            View v = getLayoutInflater().inflate(R.layout.save_pop_up_resource, null);
-
-                            cancelPopup = v.findViewById(R.id.cancelPopUpBtn);
-                            saveResultDialog.setContentView(R.layout.save_pop_up_resource);
-                            saveResultDialog.show();
-                            cancelPopup.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    saveResultDialog.dismiss();
-                                }
-                            });
-                            Spinner spinner = v.findViewById(R.id.pinSpinner);
-                            ArrayAdapter<String> adapter = new ArrayAdapter<>(MainActivity.this, R.layout.support_simple_spinner_dropdown_item,
-                                    getResources().getStringArray(R.array.pinNo) );
-
-                            spinner.setAdapter(adapter);*/
-
+                        if (boolSaveMode) {
                             AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
                             View v = getLayoutInflater().inflate(R.layout.save_pop_up_resource, null);
 
@@ -100,7 +79,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                             Button cancelPopup = v.findViewById(R.id.cancelPopUpBtn);
                             Button savepopUp = v.findViewById(R.id.savePopUpBtn);
                             TextView textViewPopup = v.findViewById(R.id.popUpTV);
-// testing Commit
+
 
                             alert.setView(v);
                             final AlertDialog alertDialog = alert.create();
@@ -109,23 +88,20 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                             textViewPopup.setText(str);
 
 
-                           //All spinner jobs
+                            //All spinner jobs
                             ArrayAdapter<String> adapter = new ArrayAdapter<>(MainActivity.this,
                                     android.R.layout.simple_spinner_dropdown_item,
-                                    getPinNumber());
+                                    GetPinNumber.getPinNumber());
                             spinner.setAdapter(adapter);
 
                             spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                                 @Override
                                 public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
 
-                                    if (getPinNumber().get(i).equals("Choose One")){
-                                        nothingSelect =  true;
-                                    }
-
-                                    else {
-                                        pinNumber = Integer.parseInt(getPinNumber().get(i));
-                                        Log.d("PIN", "onItemSelected: "+pinNumber);
+                                    if (GetPinNumber.getPinNumber().get(i) == "Choose One") {
+                                        nothingSelect = true;
+                                    } else {
+                                        pinNumber = Integer.parseInt(GetPinNumber.getPinNumber().get(i));
                                         nothingSelect = false;
                                     }
 
@@ -133,10 +109,9 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
 
                                 @Override
                                 public void onNothingSelected(AdapterView<?> adapterView) {
-                                    nothingSelect =  true;
+                                    nothingSelect = true;
                                 }
                             });
-
 
 
                             //Save and cancel Button
@@ -150,17 +125,27 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                             savepopUp.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
-                                    if(!nothingSelect){
-                                        // We will save the pin
+                                    if (!nothingSelect) {
+                                        Command currentCommand = new Command(str, pinNumber);
+                                        final long insertedRow = CommandDatabase.getInstance(MainActivity.this)
+                                                .getCommandDao()
+                                                .insertNewCommand(currentCommand);
+                                        if (insertedRow > 0) {
+                                            Toast.makeText(MainActivity.this, "Save", Toast.LENGTH_SHORT).show();
+                                            alertDialog.dismiss();
+                                        } else {
+                                            Toast.makeText(MainActivity.this, "Not saved", Toast.LENGTH_SHORT).show();
+                                        }
+
+                                    } else {
+                                        Toast.makeText(MainActivity.this, "Please select A PIN number first", Toast.LENGTH_LONG).show();
                                     }
                                 }
                             });
                             alertDialog.show();
-
                         }
 
                         break;
-
                 }
                 return false;
             }
@@ -169,10 +154,10 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
         saveTggBtn.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                   boolSaveMode = true;
+                    boolSaveMode = true;
 
                 } else {
-                   boolSaveMode =  false;
+                    boolSaveMode = false;
                 }
             }
         });
@@ -181,58 +166,67 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
 
     @Override
     public void onBeginningOfSpeech() {
+        Log.d("AfterListening", "onBeginningOfSpeech Run");
     }
 
     @Override
     public void onEndOfSpeech() {
-        Log.d(TAG, "onEndOfSpeech: RUN");
+        Log.d("AfterListening", "onEndOfSpeech Run");
     }
 
     @Override
     public void onPartialResult(Hypothesis hypothesis) {
-        if (hypothesis == null){
-            Log.d(TAG, "onPartialResult: Hypothesis is NULL");
+        if (hypothesis == null) {
+            Log.d("AfterListening", "Hypothesis is NULL");
             return;
         }
         str = hypothesis.getHypstr();
-        Log.d(TAG, "onPartialResult: Current Output: + str");
+        Log.d("AfterListening", "Current output: " + str);
     }
 
     @Override
     public void onResult(Hypothesis hypothesis) {
-        if (hypothesis != null){
+        if (hypothesis != null) {
             dispTxt.setText("");
             String res = hypothesis.getHypstr();
-            Log.d("AfterListening", "Final Output: "+res);
+            Log.d("AfterListening", "Final Output: " + res);
             dispTxt.setText(res);
         }
     }
 
     @Override
     public void onError(Exception e) {
-        Log.d(TAG, "onError: ERROR in recognizer");
+        Log.d("AfterListening", "onError Run");
     }
 
     @Override
     public void onTimeout() {
-        Log.d(TAG, "onTimeout: Recognizer Timeout.");
+        Log.d("AfterListening", "onTimeOut Run");
+    }
+
+    public void AllCommandActivitySwitch(View view) {
+        Intent intent = new Intent(this, AllCommandListActivity.class);
+        startActivity(intent);
+
     }
 
 
-    private static class SetupSphinx extends AsyncTask<Void, Void, Exception>{
+    private static class SetupSphinx extends AsyncTask<Void, Void, Exception> {
         WeakReference<MainActivity> activityWeakReference;
-        SetupSphinx(MainActivity activity){
+
+        SetupSphinx(MainActivity activity) {
             this.activityWeakReference = new WeakReference<>(activity);
         }
+
         @Override
         protected Exception doInBackground(Void... voids) {
             try {
                 Assets assets = new Assets(activityWeakReference.get());
                 File assetDir = assets.syncAssets();
                 activityWeakReference.get().setupRecognizer(assetDir);
-            }catch (IOException e){
+            } catch (IOException e) {
                 e.printStackTrace();
-                Log.d("AsyncTask","Faild in DoInBG bla bla bla");
+                Log.d("AsyncTask", "Faild in DoInBG bla bla bla");
             }
             return null;
         }
@@ -240,16 +234,15 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
         protected void onPostExecute(Exception result) {
             if (result != null) {
                 activityWeakReference.get().dispTxt.setText("Failed to init recognizer " + result);
-            }
-            else {
-                Log.d(TAG, "onPostExecute: Success!");
+            } else {
+                Log.d("AsyncTask", "Successfully Loaded Models");
             }
         }
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions, @NonNull  int[] grantResults) {
+                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode == PERMISSIONS_REQUEST_RECORD_AUDIO) {
@@ -271,12 +264,13 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
 
                 .getRecognizer();
         recognizer.addListener(this);
-        Log.d(TAG, "setupRecognizer: Recognizer Initialized.");
+        Log.d("setupRecognozer", "Recognizer Initialized");
 
         File languageModel = new File(assetsDir, "test2.lm.DMP");
         recognizer.addNgramSearch("lm", languageModel);
 
     }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -285,29 +279,4 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
             recognizer.shutdown();
         }
     }
-
-    private List<String> getPinNumber()
-    {
-        ArrayList<String> pinNumber = new ArrayList<>();
-
-        pinNumber.add("Choose One");
-        pinNumber.add("0");
-        pinNumber.add("1");
-        pinNumber.add("2");
-        pinNumber.add("3");
-        pinNumber.add("4");
-        pinNumber.add("5");
-        pinNumber.add("6");
-        pinNumber.add("7");
-        pinNumber.add("8");
-        pinNumber.add("9");
-        pinNumber.add("10");
-        pinNumber.add("11");
-        pinNumber.add("12");
-        pinNumber.add("13");
-
-        return pinNumber;
-
-    }
-
 }
