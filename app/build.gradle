@@ -27,6 +27,19 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.2.0'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     implementation project(path: ':pocketsphinx-android-5prealpha-release')
+
+
+    //Room Dependencies
+    def room_version = "2.2.0"
+    implementation "androidx.room:room-runtime:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$room_version"
+    implementation 'androidx.recyclerview:recyclerview:1.0.0'
+
+    //
+    implementation 'com.google.android.material:material:1.0.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0-beta05'
+
 }
 
 ant.importBuild 'assets.xml'
