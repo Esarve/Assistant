@@ -39,15 +39,13 @@ import edu.cmu.pocketsphinx.SpeechRecognizerSetup;
 public class MainActivity extends AppCompatActivity implements RecognitionListener {
 
     Button btnRec;
-    TextView dispTxt, emptyTV;
+    TextView dispTxt;
     private ToggleButton saveTggBtn;
     private boolean boolSaveMode; // Check if save mood is on or not
     int pinNumber;
     boolean nothingSelect; // Determine if anything is selected on the Spinner or not
     String str;
-    private static final int PERMISSIONS_REQUEST_RECORD_AUDIO = 1;
     private SpeechRecognizer recognizer;
-
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +56,11 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
         btnRec = findViewById(R.id.btnRec);
         dispTxt = findViewById(R.id.dsplyRslt);
         saveTggBtn = findViewById(R.id.saveToggleBtn);
+        final View v = getLayoutInflater().inflate(R.layout.save_pop_up_resource, null);
+        final Spinner spinner = v.findViewById(R.id.pinSpinner);
+        final Button cancelPopup = v.findViewById(R.id.cancelPopUpBtn);
+        final Button savepopUp = v.findViewById(R.id.savePopUpBtn);
+        final TextView textViewPopup = v.findViewById(R.id.popUpTV);
 
         new SetupSphinx(this).execute();
         btnRec.setOnTouchListener(new View.OnTouchListener() {
@@ -73,20 +76,11 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                         recognizer.stop();
                         if (boolSaveMode) {
                             AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
-                            View v = getLayoutInflater().inflate(R.layout.save_pop_up_resource, null);
-
-                            Spinner spinner = v.findViewById(R.id.pinSpinner);
-                            Button cancelPopup = v.findViewById(R.id.cancelPopUpBtn);
-                            Button savepopUp = v.findViewById(R.id.savePopUpBtn);
-                            TextView textViewPopup = v.findViewById(R.id.popUpTV);
-
-
                             alert.setView(v);
                             final AlertDialog alertDialog = alert.create();
                             alertDialog.setCanceledOnTouchOutside(false);
 
                             textViewPopup.setText(str);
-
 
                             //All spinner jobs
                             ArrayAdapter<String> adapter = new ArrayAdapter<>(MainActivity.this,
@@ -234,20 +228,6 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                 activityWeakReference.get().dispTxt.setText("Failed to init recognizer " + result);
             } else {
                 Log.d("AsyncTask", "Successfully Loaded Models");
-            }
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == PERMISSIONS_REQUEST_RECORD_AUDIO) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                new SetupSphinx(this).execute();
-            } else {
-                finish();
             }
         }
     }
