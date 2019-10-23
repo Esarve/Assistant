@@ -4,7 +4,6 @@ package com.lazycodes.assistant;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,18 +17,13 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
-
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
 import com.lazycodes.assistant.RecyclerView.AllCommandListActivity;
 import com.lazycodes.assistant.db.Command;
 import com.lazycodes.assistant.db.CommandDatabase;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
-
 import edu.cmu.pocketsphinx.Assets;
 import edu.cmu.pocketsphinx.Hypothesis;
 import edu.cmu.pocketsphinx.RecognitionListener;
@@ -242,7 +236,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
 
                 .getRecognizer();
         recognizer.addListener(this);
-        Log.d("setupRecognozer", "Recognizer Initialized");
+        Log.d("setupRecognizer", "Recognizer Initialized");
 
         File languageModel = new File(assetsDir, "test2.lm.DMP");
         recognizer.addNgramSearch("lm", languageModel);
