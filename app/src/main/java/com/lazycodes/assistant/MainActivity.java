@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -70,6 +71,9 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                         recognizer.stop();
                         if (boolSaveMode) {
                             AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+                            if (v.getParent()!= null){
+                                ((ViewGroup)v.getParent()).removeView(v);
+                            }
                             alert.setView(v);
                             final AlertDialog alertDialog = alert.create();
                             alertDialog.setCanceledOnTouchOutside(false);
