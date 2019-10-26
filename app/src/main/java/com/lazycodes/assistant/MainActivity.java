@@ -51,11 +51,6 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
         btnRec = findViewById(R.id.btnRec);
         dispTxt = findViewById(R.id.dsplyRslt);
         saveTggBtn = findViewById(R.id.saveToggleBtn);
-        final View v = getLayoutInflater().inflate(R.layout.save_pop_up_resource, null);
-        final Spinner spinner = v.findViewById(R.id.pinSpinner);
-        final Button cancelPopup = v.findViewById(R.id.cancelPopUpBtn);
-        final Button savepopUp = v.findViewById(R.id.savePopUpBtn);
-        final TextView textViewPopup = v.findViewById(R.id.popUpTV);
 
         new SetupSphinx(this).execute();
         btnRec.setOnTouchListener(new View.OnTouchListener() {
@@ -70,71 +65,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                     case MotionEvent.ACTION_UP:
                         recognizer.stop();
                         if (boolSaveMode) {
-                            AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
-                            if (v.getParent()!= null){
-                                ((ViewGroup)v.getParent()).removeView(v);
-                            }
-                            alert.setView(v);
-                            final AlertDialog alertDialog = alert.create();
-                            alertDialog.setCanceledOnTouchOutside(false);
-
-                            textViewPopup.setText(str);
-
-                            //All spinner jobs
-                            ArrayAdapter<String> adapter = new ArrayAdapter<>(MainActivity.this,
-                                    android.R.layout.simple_spinner_dropdown_item,
-                                    GetPinNumber.getPinNumber());
-                            spinner.setAdapter(adapter);
-
-                            spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                                @Override
-                                public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-
-                                    if (GetPinNumber.getPinNumber().get(i) == "Choose One") {
-                                        nothingSelect = true;
-                                    } else {
-                                        pinNumber = Integer.parseInt(GetPinNumber.getPinNumber().get(i));
-                                        nothingSelect = false;
-                                    }
-
-                                }
-
-                                @Override
-                                public void onNothingSelected(AdapterView<?> adapterView) {
-                                    nothingSelect = true;
-                                }
-                            });
-
-
-                            //Save and cancel Button
-                            cancelPopup.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    alertDialog.dismiss();
-                                }
-                            });
-
-                            savepopUp.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    if (!nothingSelect) {
-                                        Command currentCommand = new Command(str, pinNumber);
-                                        final long insertedRow = CommandDatabase.getInstance(MainActivity.this)
-                                                .getCommandDao()
-                                                .insertNewCommand(currentCommand);
-                                        if (insertedRow > 0) {
-                                            Toast.makeText(MainActivity.this, "Save", Toast.LENGTH_SHORT).show();
-                                            alertDialog.dismiss();
-                                        } else {
-                                            Toast.makeText(MainActivity.this, "Not saved", Toast.LENGTH_SHORT).show();
-                                        }
-
-                                    } else {
-                                        Toast.makeText(MainActivity.this, "Please select A PIN number first", Toast.LENGTH_LONG).show();
-                                    }
-                                }
-                            });
-                            alertDialog.show();
+                            ShowAlertDialog();
                         }
 
                         break;
@@ -154,6 +85,80 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
             }
         });
 
+    }
+
+    private void ShowAlertDialog() {
+        View v = getLayoutInflater().inflate(R.layout.save_pop_up_resource, null);
+        Spinner spinner = v.findViewById(R.id.pinSpinner);
+        Button cancelPopup = v.findViewById(R.id.cancelPopUpBtn);
+        Button savepopUp = v.findViewById(R.id.savePopUpBtn);
+        TextView textViewPopup = v.findViewById(R.id.popUpTV);
+
+        AlertDialog.Builder alert = new AlertDialog.Builder(MainActivity.this);
+        if (v.getParent()!= null){
+            ((ViewGroup)v.getParent()).removeView(v);
+        }
+        alert.setView(v);
+        final AlertDialog alertDialog = alert.create();
+        alertDialog.setCanceledOnTouchOutside(false);
+
+        textViewPopup.setText(str);
+
+        //All spinner jobs
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(MainActivity.this,
+                android.R.layout.simple_spinner_dropdown_item,
+                GetPinNumber.getPinNumber());
+        spinner.setAdapter(adapter);
+
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+
+                if (GetPinNumber.getPinNumber().get(i) == "Choose One") {
+                    nothingSelect = true;
+                } else {
+                    pinNumber = Integer.parseInt(GetPinNumber.getPinNumber().get(i));
+                    nothingSelect = false;
+                }
+
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                nothingSelect = true;
+            }
+        });
+
+
+        //Save and cancel Button
+        cancelPopup.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                alertDialog.dismiss();
+            }
+        });
+
+        savepopUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (!nothingSelect) {
+                    Command currentCommand = new Command(str, pinNumber);
+                    final long insertedRow = CommandDatabase.getInstance(MainActivity.this)
+                            .getCommandDao()
+                            .insertNewCommand(currentCommand);
+                    if (insertedRow > 0) {
+                        Toast.makeText(MainActivity.this, "Save", Toast.LENGTH_SHORT).show();
+                        alertDialog.dismiss();
+                    } else {
+                        Toast.makeText(MainActivity.this, "Not saved", Toast.LENGTH_SHORT).show();
+                    }
+
+                } else {
+                    Toast.makeText(MainActivity.this, "Please select A PIN number first", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+        alertDialog.show();
     }
 
     @Override
