@@ -3,9 +3,13 @@ package com.lazycodes.assistant;
 
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -14,6 +18,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -24,7 +29,12 @@ import com.lazycodes.assistant.db.Command;
 import com.lazycodes.assistant.db.CommandDatabase;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.ref.WeakReference;
+import java.util.Set;
+import java.util.UUID;
+
 import edu.cmu.pocketsphinx.Assets;
 import edu.cmu.pocketsphinx.Hypothesis;
 import edu.cmu.pocketsphinx.RecognitionListener;
@@ -41,6 +51,24 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
     boolean nothingSelect; // Determine if anything is selected on the Spinner or not
     String str;
     private SpeechRecognizer recognizer;
+
+
+    // Bluetooth Staff
+    Button btNotConnectedBtn,btConnectedBtn;
+    private final String DEVICE_ADDRESS="98:D3:34:F5:9E:09";
+    private final UUID PORT_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");//Serial Port Service ID
+    private BluetoothDevice device;
+    private BluetoothSocket socket;
+    private OutputStream outputStream;
+    private InputStream inputStream;
+    boolean deviceConnected=false;
+    byte buffer[];
+    boolean stopThread;
+    boolean isBooleanBTConncted =  false;
+
+
+
+
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +79,41 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
         btnRec = findViewById(R.id.btnRec);
         dispTxt = findViewById(R.id.dsplyRslt);
         saveTggBtn = findViewById(R.id.saveToggleBtn);
+
+        //Bluetooth Staff
+        btNotConnectedBtn = findViewById(R.id.bluetoothNotConnectedBtn);
+        btConnectedBtn = findViewById(R.id.bluetoothConnectedBtn);
+
+        btNotConnectedBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if(BTinit())
+                {
+                    if(BTconnect())
+                    {
+                        setUiEnabled(true);
+                        deviceConnected=true;
+                        beginListenForData();
+                        Toast.makeText(MainActivity.this, "Connected", Toast.LENGTH_SHORT).show();
+                        isBooleanBTConncted = true;
+                    }
+
+                }
+            }
+        });
+
+        btConnectedBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                try {
+                    stopBtConnection();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        // BT staff ends
 
         new SetupSphinx(this).execute();
         btnRec.setOnTouchListener(new View.OnTouchListener() {
@@ -68,6 +131,17 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                             ShowAlertDialog();
                         }
 
+                        else{
+                        if(isBooleanBTConncted){
+                            // Method to send data
+                            sendCommandToArduino();
+                        }
+
+                        else{
+                            Toast.makeText(MainActivity.this, "Please Connect with bluetooth first", Toast.LENGTH_LONG).show();
+                        }
+                    }
+
                         break;
                 }
                 return false;
@@ -84,8 +158,150 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                 }
             }
         });
+    }
+
+    //BT methods starts
+
+    public void setUiEnabled(boolean bool)
+    {
+
+        if(bool){
+            btConnectedBtn.setVisibility(View.VISIBLE);
+            btNotConnectedBtn.setVisibility(View.GONE);
+        }else{
+            btConnectedBtn.setVisibility(View.GONE);
+            btNotConnectedBtn.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public boolean BTinit()
+    {
+        boolean found=false;
+        BluetoothAdapter bluetoothAdapter=BluetoothAdapter.getDefaultAdapter();
+        if (bluetoothAdapter == null) {
+            Toast.makeText(getApplicationContext(),"Device doesnt Support Bluetooth",Toast.LENGTH_SHORT).show();
+        }
+        if(!bluetoothAdapter.isEnabled())
+        {
+            Intent enableAdapter = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableAdapter, 0);
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        Set<BluetoothDevice> bondedDevices = bluetoothAdapter.getBondedDevices();
+        if(bondedDevices.isEmpty())
+        {
+            Toast.makeText(getApplicationContext(),"Please Pair the Device first",Toast.LENGTH_SHORT).show();
+        }
+        else
+        {
+            for (BluetoothDevice iterator : bondedDevices)
+            {
+                if(iterator.getAddress().equals(DEVICE_ADDRESS))
+                {
+                    device=iterator;
+                    found=true;
+                    break;
+                }
+            }
+        }
+        return found;
+    }
+
+    public boolean BTconnect()
+    {
+        boolean connected=true;
+        try {
+            socket = device.createRfcommSocketToServiceRecord(PORT_UUID);
+            socket.connect();
+        } catch (IOException e) {
+            e.printStackTrace();
+            connected=false;
+        }
+        if(connected)
+        {
+            try {
+                outputStream=socket.getOutputStream();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                inputStream=socket.getInputStream();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+
+        return connected;
+    }
+
+    void beginListenForData()
+    {
+        final Handler handler = new Handler();
+        stopThread = false;
+        buffer = new byte[1024];
+        Thread thread  = new Thread(new Runnable()
+        {
+            public void run()
+            {
+                while(!Thread.currentThread().isInterrupted() && !stopThread)
+                {
+                    try
+                    {
+                        int byteCount = inputStream.available();
+                        if(byteCount > 0)
+                        {
+                            byte[] rawBytes = new byte[byteCount];
+                            inputStream.read(rawBytes);
+                            final String string=new String(rawBytes,"UTF-8");
+                            handler.post(new Runnable() {
+                                public void run()
+                                {
+                                    //textView.append(string);
+                                }
+                            });
+
+                        }
+                    }
+                    catch (IOException ex)
+                    {
+                        stopThread = true;
+                    }
+                }
+            }
+        });
+
+        thread.start();
+    }
+
+    public void stopBtConnection() throws IOException {
+        stopThread = true;
+        outputStream.close();
+        inputStream.close();
+        socket.close();
+        setUiEnabled(false);
+        deviceConnected=false;
+        Toast.makeText(this, "Connection Closed", Toast.LENGTH_SHORT).show();
+        isBooleanBTConncted = false;
+    }
+
+    public void sendCommandToArduino() {
+
+        str.concat("\n");
+        try {
+            outputStream.write(str.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
+
+// BT Staff Finished
 
     private void ShowAlertDialog() {
         View v = getLayoutInflater().inflate(R.layout.save_pop_up_resource, null);
