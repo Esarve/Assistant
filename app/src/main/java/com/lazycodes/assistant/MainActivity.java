@@ -127,10 +127,9 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                         break;
                     case MotionEvent.ACTION_UP:
                         recognizer.stop();
-                        if (boolSaveMode) {
+/*                        if (boolSaveMode) {
                             ShowAlertDialog();
                         }
-
                         else{
                         if(isBooleanBTConncted){
                             // Method to send data
@@ -140,7 +139,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                         else{
                             Toast.makeText(MainActivity.this, "Please Connect with bluetooth first", Toast.LENGTH_LONG).show();
                         }
-                    }
+                    }*/
 
                         break;
                 }
@@ -179,7 +178,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
         boolean found=false;
         BluetoothAdapter bluetoothAdapter=BluetoothAdapter.getDefaultAdapter();
         if (bluetoothAdapter == null) {
-            Toast.makeText(getApplicationContext(),"Device doesnt Support Bluetooth",Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(),"Device doesn't Support Bluetooth",Toast.LENGTH_SHORT).show();
         }
         if(!bluetoothAdapter.isEnabled())
         {
@@ -292,7 +291,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
 
     public void sendCommandToArduino() {
 
-        str.concat("\n");
+       // str.concat("\n");
         try {
             outputStream.write(str.getBytes());
         } catch (IOException e) {
@@ -393,7 +392,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
             Log.d("AfterListening", "Hypothesis is NULL");
             return;
         }
-        str = hypothesis.getHypstr();
+        //str = hypothesis.getHypstr();
         Log.d("AfterListening", "Current output: " + str);
     }
 
@@ -402,8 +401,24 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
         if (hypothesis != null) {
             dispTxt.setText("");
             String res = hypothesis.getHypstr();
+            str = res;
             Log.d("AfterListening", "Final Output: " + res);
             dispTxt.setText(res);
+
+            if (boolSaveMode) {
+                ShowAlertDialog();
+            }
+            else{
+                if(isBooleanBTConncted){
+                    // Method to send data
+                    sendCommandToArduino();
+                }
+
+                else{
+                    Toast.makeText(MainActivity.this, "Please Connect with bluetooth first", Toast.LENGTH_LONG).show();
+                }
+            }
+
         }
     }
 
