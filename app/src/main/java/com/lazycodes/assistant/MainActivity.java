@@ -277,9 +277,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
     }
 
     public void sendCommandToArduino(int pinNumber,int action) {
-
-
-        str.concat("\n");
+        
         try {
             outputStream.write(Integer.toString(pinNumber).getBytes());
             outputStream.write(Integer.toString(action).getBytes());
