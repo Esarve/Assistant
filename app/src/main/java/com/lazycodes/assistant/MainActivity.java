@@ -277,7 +277,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
     }
 
     public void sendCommandToArduino(int pinNumber,int action) {
-
+        Log.d("Result", "sendCommandToArduino: pinNUmber");
         try {
             outputStream.write(Integer.toString(pinNumber).getBytes());
             outputStream.write(Integer.toString(action).getBytes());
@@ -390,28 +390,28 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
             String res = hypothesis.getHypstr();
             Log.d("AfterListening", "Final Output: " + res);
             dispTxt.setText(res);
-            Log.d("ACTION", "onResult: ACTION = "+action);
+
             if (boolSaveMode) {
                 ShowAlertDialog();
             }
             else{
                 if(isBooleanBTConncted){
-                    Command command = CommandDatabase.getInstance(this)
+                    Command command = CommandDatabase.getInstance(getApplicationContext())
                             .getCommandDao()
                             .getTriggerCommand(str);
                     if(command!=null){
-                        if (str.toLowerCase().contains("on") || str.toLowerCase().contains("chalu") || str.toLowerCase().contains("charo") || str.toLowerCase().contains("jalao") || str.toLowerCase().contains("khulo")){
+                        if (command.getFullCommand().toLowerCase().contains("on") || command.getFullCommand().toLowerCase().contains("chalu") || command.getFullCommand().toLowerCase().contains("charo") || command.getFullCommand().toLowerCase().contains("jalao") || command.getFullCommand().toLowerCase().contains("khulo")){
                             action = 1;
 
                         }
-                        else if (str.toLowerCase().contains("off") || str.toLowerCase().contains("bondho") || str.toLowerCase().contains("nibhao") || str.toLowerCase().contains("bondho")){
+                        else if (command.getFullCommand().toLowerCase().contains("off") || command.getFullCommand().toLowerCase().contains("bondho") || command.getFullCommand().toLowerCase().contains("nibhao") || command.getFullCommand().toLowerCase().contains("bondho")){
                             action = 0;
                         }
 
-                        Log.d("dbres", "onResult: "+command.getFullCommand());
+                        Log.d("Result", "onResult: "+command.getFullCommand());
 
                         pinNumber = command.getPinNo();
-                        Log.d("Result", "onResult: Pin number :"+pinNumber+" action"+action);
+                        Log.d("Result", "onResult: Pin number :"+pinNumber+" action "+action);
                         sendCommandToArduino(pinNumber,action);
 
                     }
