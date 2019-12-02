@@ -27,6 +27,9 @@ public interface CommandDao {
     @Query("select * from tbl_command where fullCommand like:CurrantCommand")
     Command getTriggerCommand(String CurrantCommand);
 
+    @Query("Delete from tbl_command")
+    List<Command> delteAllSavedCommands();
+
 
 
 }

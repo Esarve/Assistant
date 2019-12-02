@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Assistant</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
 
 
 </resources>
