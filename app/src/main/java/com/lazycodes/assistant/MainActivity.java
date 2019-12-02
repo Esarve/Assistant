@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
     int pinNumber;
     boolean nothingSelect; // Determine if anything is selected on the Spinner or not
     String str;
+    int action;
     private SpeechRecognizer recognizer;
 
 
@@ -127,21 +128,6 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                         break;
                     case MotionEvent.ACTION_UP:
                         recognizer.stop();
-                        if (boolSaveMode) {
-                            ShowAlertDialog();
-                        }
-
-                        else{
-                        if(isBooleanBTConncted){
-                            // Method to send data
-                            sendCommandToArduino();
-                        }
-
-                        else{
-                            Toast.makeText(MainActivity.this, "Please Connect with bluetooth first", Toast.LENGTH_LONG).show();
-                        }
-                    }
-
                         break;
                 }
                 return false;
@@ -290,11 +276,11 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
         isBooleanBTConncted = false;
     }
 
-    public void sendCommandToArduino() {
+    public void sendCommandToArduino(int pinNumber,int action) {
 
-        str.concat("\n");
         try {
-            outputStream.write(str.getBytes());
+            outputStream.write(Integer.toString(pinNumber).getBytes());
+            outputStream.write(Integer.toString(action).getBytes());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -404,6 +390,42 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
             String res = hypothesis.getHypstr();
             Log.d("AfterListening", "Final Output: " + res);
             dispTxt.setText(res);
+            Log.d("ACTION", "onResult: ACTION = "+action);
+            if (boolSaveMode) {
+                ShowAlertDialog();
+            }
+            else{
+                if(isBooleanBTConncted){
+                    Command command = CommandDatabase.getInstance(this)
+                            .getCommandDao()
+                            .getTriggerCommand(str);
+                    if(command!=null){
+                        if (str.toLowerCase().contains("on") || str.toLowerCase().contains("chalu") || str.toLowerCase().contains("charo") || str.toLowerCase().contains("jalao") || str.toLowerCase().contains("khulo")){
+                            action = 1;
+
+                        }
+                        else if (str.toLowerCase().contains("off") || str.toLowerCase().contains("bondho") || str.toLowerCase().contains("nibhao") || str.toLowerCase().contains("bondho")){
+                            action = 0;
+                        }
+
+                        Log.d("dbres", "onResult: "+command.getFullCommand());
+
+                        pinNumber = command.getPinNo();
+                        Log.d("Result", "onResult: Pin number :"+pinNumber+" action"+action);
+                        sendCommandToArduino(pinNumber,action);
+
+                    }
+                    else{
+                        Toast.makeText(MainActivity.this, "Command not found in DB. Please add first.", Toast.LENGTH_LONG).show();
+                    }
+
+                }
+                else{
+                    Toast.makeText(MainActivity.this, "Please Connect with bluetooth first", Toast.LENGTH_LONG).show();
+                }
+            }
+
+
         }
     }
 

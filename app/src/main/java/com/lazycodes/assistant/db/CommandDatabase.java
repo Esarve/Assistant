@@ -22,5 +22,7 @@ public abstract class CommandDatabase extends RoomDatabase {
                 .allowMainThreadQueries()
                 .build();
         return db;
+
+
     }
 }

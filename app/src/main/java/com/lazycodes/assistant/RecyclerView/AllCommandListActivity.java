@@ -7,7 +7,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.lazycodes.assistant.R;
 import com.lazycodes.assistant.db.Command;
@@ -23,15 +26,29 @@ public class AllCommandListActivity extends AppCompatActivity {
     private CommandAdapter adapter;
     private RecyclerView mRecyclerView;
     private TextView mTextView;
+    private ImageButton deleteIV;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_command_list);
 
+        deleteIV.setOnClickListener(new View.OnClickListener() {
+    @Override
+    public void onClick(View view) {
+       /* mCommandList = CommandDatabase.getInstance(context)
+                .getCommandDao()
+                .delteAllSavedCommands();
+        adapter.notifyDataSetChanged();*/
+        Toast.makeText(context, "Deleted Successfully", Toast.LENGTH_SHORT).show();
+    }
+});
+
         context = AllCommandListActivity.this;
         mRecyclerView = findViewById(R.id.all_commandRV);
         mTextView = findViewById(R.id.emptyTV);
+        deleteIV = findViewById(R.id.delete_all);
 
         mCommandList = CommandDatabase.getInstance(context)
                 .getCommandDao()
@@ -47,4 +64,5 @@ public class AllCommandListActivity extends AppCompatActivity {
         mRecyclerView.setLayoutManager(linearLayoutManager);
         mRecyclerView.setAdapter(adapter);
     }
+
 }

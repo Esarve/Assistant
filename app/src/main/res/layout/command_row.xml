@@ -34,6 +34,20 @@
             android:textAlignment="center"
             android:textStyle="italic"
             android:layout_marginLeft="5dp" />
+        <ImageView
+
+            android:id="@+id/row_menu_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_delete_black_24dp"
+            android:textSize="20sp"
+            android:layout_margin="1dp"
+            android:padding="3dp"
+            android:textColor="#000"
+            android:layout_alignParentRight="true"
+            android:layout_marginLeft="3dp"
+            />
+
 
     </LinearLayout>
 
