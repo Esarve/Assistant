@@ -1,6 +1,5 @@
 kws.txt
 model/feat.params
-model/feature_transform
 model/mdef
 model/means
 model/mixture_weights
