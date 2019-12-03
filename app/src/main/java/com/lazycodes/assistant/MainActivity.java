@@ -2,6 +2,7 @@ package com.lazycodes.assistant;
 
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -51,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
     boolean nothingSelect; // Determine if anything is selected on the Spinner or not
     String str;
     int action;
+    private Command command, currentCommand;
     private SpeechRecognizer recognizer;
 
 
@@ -277,7 +279,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
     }
 
     public void sendCommandToArduino(int pinNumber,int action) {
-
+        Log.d("Result", "sendCommandToArduino: pinNUmber");
         try {
             outputStream.write(Integer.toString(pinNumber).getBytes());
             outputStream.write(Integer.toString(action).getBytes());
@@ -344,7 +346,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
             @Override
             public void onClick(View view) {
                 if (!nothingSelect) {
-                    Command currentCommand = new Command(str, pinNumber);
+                    currentCommand = new Command(str.toLowerCase(), pinNumber);
                     final long insertedRow = CommandDatabase.getInstance(MainActivity.this)
                             .getCommandDao()
                             .insertNewCommand(currentCommand);
@@ -390,34 +392,50 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
             String res = hypothesis.getHypstr();
             Log.d("AfterListening", "Final Output: " + res);
             dispTxt.setText(res);
-            Log.d("ACTION", "onResult: ACTION = "+action);
+
             if (boolSaveMode) {
                 ShowAlertDialog();
             }
             else{
                 if(isBooleanBTConncted){
-                    Command command = CommandDatabase.getInstance(this)
-                            .getCommandDao()
-                            .getTriggerCommand(str);
-                    if(command!=null){
-                        if (str.toLowerCase().contains("on") || str.toLowerCase().contains("chalu") || str.toLowerCase().contains("charo") || str.toLowerCase().contains("jalao") || str.toLowerCase().contains("khulo")){
-                            action = 1;
 
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            command = CommandDatabase.getInstance(getApplicationContext())
+                                    .getCommandDao()
+                                    .getTriggerCommand(str.toLowerCase());
+                            /*try {
+                                Log.d("Result", "onResult: Found String: "+ command.getFullCommand());
+                                Log.d("Result", "onResult: Found Ping: "+command.getPinNo());
+                            }catch (NullPointerException e){
+                                e.printStackTrace();
+                            }*/
+                            if(command!=null){
+                                Log.d("Result", "Retrieved command from Object: "+command.getFullCommand());
+                                Log.d("Result", "Retrieved command from Str: "+ str);
+                                if (command.getFullCommand().contains("off") || command.getFullCommand().contains("bondho") || command.getFullCommand().contains("nibhao") || command.getFullCommand().contains("bondho")){
+                                    action = 0;
+                                    Log.d("FLAG", "Action 0 SET ");
+                                }
+                                else if (command.getFullCommand().contains("on") || command.getFullCommand().contains("chalu") || command.getFullCommand().contains("charo") || command.getFullCommand().contains("jalao") || command.getFullCommand().contains("khulo")){
+                                    action = 1;
+                                    Log.d("FLAG", "Action 1 SET ");
+                                }
+                                pinNumber = command.getPinNo();
+                                command = null;
+                                Log.d("Result", "Retrieved Pin number :"+pinNumber+" action "+action);
+                                sendCommandToArduino(pinNumber,action);
+
+                            }
+                            else{
+                                Toast.makeText(getApplicationContext(), "Command not found in Database", Toast.LENGTH_LONG).show();
+                                Log.d("Result", "run: NOT FOUND IN DB");
+                            }
                         }
-                        else if (str.toLowerCase().contains("off") || str.toLowerCase().contains("bondho") || str.toLowerCase().contains("nibhao") || str.toLowerCase().contains("bondho")){
-                            action = 0;
-                        }
+                    }).start();
 
-                        Log.d("dbres", "onResult: "+command.getFullCommand());
 
-                        pinNumber = command.getPinNo();
-                        Log.d("Result", "onResult: Pin number :"+pinNumber+" action"+action);
-                        sendCommandToArduino(pinNumber,action);
-
-                    }
-                    else{
-                        Toast.makeText(MainActivity.this, "Command not found in DB. Please add first.", Toast.LENGTH_LONG).show();
-                    }
 
                 }
                 else{
@@ -498,4 +516,5 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
             recognizer.shutdown();
         }
     }
+
 }
