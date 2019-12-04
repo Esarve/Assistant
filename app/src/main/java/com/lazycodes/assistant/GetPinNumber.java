@@ -8,8 +8,6 @@ public final class GetPinNumber {
         ArrayList<String> pinNumber = new ArrayList<>();
 
         pinNumber.add("Choose One");
-        pinNumber.add("0");
-        pinNumber.add("1");
         pinNumber.add("2");
         pinNumber.add("3");
         pinNumber.add("4");

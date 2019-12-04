@@ -279,7 +279,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
     }
 
     public void sendCommandToArduino(int pinNumber,int action) {
-        Log.d("Result", "sendCommandToArduino: pinNUmber");
+        
         try {
             outputStream.write(Integer.toString(pinNumber).getBytes());
             outputStream.write(Integer.toString(action).getBytes());
@@ -429,12 +429,19 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
 
                             }
                             else{
-                                Toast.makeText(getApplicationContext(), "Command not found in Database", Toast.LENGTH_LONG).show();
+
+                                MainActivity.this.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getApplicationContext(), "Command not found in Database", Toast.LENGTH_LONG).show();
+                                        Log.d("Result", "run: NOT FOUND IN DB");
+                                    }
+                                });
+
                                 Log.d("Result", "run: NOT FOUND IN DB");
                             }
                         }
                     }).start();
-
 
 
                 }
