@@ -33,13 +33,12 @@ dependencies {
     def room_version = "2.2.0"
     implementation "androidx.room:room-runtime:$room_version"
     annotationProcessor "androidx.room:room-compiler:$room_version"
-    implementation 'androidx.recyclerview:recyclerview:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
 
     //
     implementation 'com.google.android.material:material:1.0.0'
     implementation 'androidx.cardview:cardview:1.0.0'
-    implementation 'androidx.recyclerview:recyclerview:1.1.0-beta05'
-
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'
 }
 
 ant.importBuild 'assets.xml'

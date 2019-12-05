@@ -3,7 +3,7 @@
 -nfilt 25
 -transform dct
 -lifter 22
--feat 1s_c_d_dd
+-feat s2_4x
 -agc none
 -cmn batch
 -varnorm no
