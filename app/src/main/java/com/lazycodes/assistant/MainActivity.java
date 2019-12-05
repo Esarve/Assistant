@@ -51,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
     int pinNumber;
     boolean nothingSelect; // Determine if anything is selected on the Spinner or not
     String str;
+    String res;
     int action;
     private Command command, currentCommand;
     private SpeechRecognizer recognizer;
@@ -279,7 +280,9 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
     }
 
     public void sendCommandToArduino(int pinNumber,int action) {
+
         Log.d("Result", "sendCommandToArduino: pinNUmber");
+
         try {
             outputStream.write(Integer.toString(pinNumber).getBytes());
             outputStream.write(Integer.toString(action).getBytes());
@@ -381,17 +384,17 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
             Log.d("AfterListening", "Hypothesis is NULL");
             return;
         }
-        str = hypothesis.getHypstr();
-        Log.d("AfterListening", "Current output: " + str);
+        res = hypothesis.getHypstr();
+        Log.d("AfterListening", "Current output: " + res);
     }
 
     @Override
     public void onResult(Hypothesis hypothesis) {
         if (hypothesis != null) {
             dispTxt.setText("");
-            String res = hypothesis.getHypstr();
-            Log.d("AfterListening", "Final Output: " + res);
-            dispTxt.setText(res);
+            str = hypothesis.getHypstr();
+            Log.d("AfterListening", "Final Output: " + str);
+            dispTxt.setText(str);
 
             if (boolSaveMode) {
                 ShowAlertDialog();
@@ -414,7 +417,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                             if(command!=null){
                                 Log.d("Result", "Retrieved command from Object: "+command.getFullCommand());
                                 Log.d("Result", "Retrieved command from Str: "+ str);
-                                if (command.getFullCommand().contains("off") || command.getFullCommand().contains("bondho") || command.getFullCommand().contains("nibhao") || command.getFullCommand().contains("bondho")){
+                                if (command.getFullCommand().contains("off") || command.getFullCommand().contains("nibhao") || command.getFullCommand().contains("bondho")){
                                     action = 0;
                                     Log.d("FLAG", "Action 0 SET ");
                                 }
@@ -424,13 +427,26 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                                 }
                                 pinNumber = command.getPinNo();
                                 command = null;
-                                Log.d("Result", "Retrieved Pin number :"+pinNumber+" action "+action);
+                                Log.d("AfterListening", "Retrieved Pin number :"+pinNumber+" action "+action);
                                 sendCommandToArduino(pinNumber,action);
 
                             }
                             else{
+
                                 Toast.makeText(getApplicationContext(), "Command not found in Database", Toast.LENGTH_LONG).show();
                                 Log.d("Result", "run: NOT FOUND IN DB");
+
+
+                                MainActivity.this.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getApplicationContext(), "Command not found in Database", Toast.LENGTH_LONG).show();
+                                        Log.d("Result", "run: NOT FOUND IN DB");
+                                    }
+                                });
+
+                                Log.d("AfterListening", "run: NOT FOUND IN DB");
+
                             }
                         }
                     }).start();
