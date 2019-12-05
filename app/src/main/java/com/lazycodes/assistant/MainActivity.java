@@ -2,7 +2,6 @@ package com.lazycodes.assistant;
 
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -19,7 +18,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -381,8 +379,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
             Log.d("AfterListening", "Hypothesis is NULL");
             return;
         }
-        str = hypothesis.getHypstr();
-        Log.d("AfterListening", "Current output: " + str);
+        Log.d("AfterListening", "Current output: " + hypothesis.getHypstr());
     }
 
     @Override
@@ -405,16 +402,10 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                             command = CommandDatabase.getInstance(getApplicationContext())
                                     .getCommandDao()
                                     .getTriggerCommand(str.toLowerCase());
-                            /*try {
-                                Log.d("Result", "onResult: Found String: "+ command.getFullCommand());
-                                Log.d("Result", "onResult: Found Ping: "+command.getPinNo());
-                            }catch (NullPointerException e){
-                                e.printStackTrace();
-                            }*/
                             if(command!=null){
-                                Log.d("Result", "Retrieved command from Object: "+command.getFullCommand());
-                                Log.d("Result", "Retrieved command from Str: "+ str);
-                                if (command.getFullCommand().contains("off") || command.getFullCommand().contains("bondho") || command.getFullCommand().contains("nibhao") || command.getFullCommand().contains("bondho")){
+                                Log.d("AfterListening", "Retrieved command from Object: "+command.getFullCommand());
+                                Log.d("AfterListening", "Retrieved command from Str: "+ str);
+                                if (command.getFullCommand().contains("off") || command.getFullCommand().contains("bondho") || command.getFullCommand().contains("nibhao")){
                                     action = 0;
                                     Log.d("FLAG", "Action 0 SET ");
                                 }
@@ -424,25 +415,15 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                                 }
                                 pinNumber = command.getPinNo();
                                 command = null;
-                                Log.d("Result", "Retrieved Pin number :"+pinNumber+" action "+action);
+                                Log.d("AfterListening", "Retrieved Pin number :"+pinNumber+" action "+action);
                                 sendCommandToArduino(pinNumber,action);
-
                             }
                             else{
-
-                                MainActivity.this.runOnUiThread(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        Toast.makeText(getApplicationContext(), "Command not found in Database", Toast.LENGTH_LONG).show();
-                                        Log.d("Result", "run: NOT FOUND IN DB");
-                                    }
-                                });
-
-                                Log.d("Result", "run: NOT FOUND IN DB");
+                                Toast.makeText(getApplicationContext(), "Command not found in Database", Toast.LENGTH_LONG).show();
+                                Log.d("AfterListening", "run: NOT FOUND IN DB");
                             }
                         }
                     }).start();
-
 
                 }
                 else{
