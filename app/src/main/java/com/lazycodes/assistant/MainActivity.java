@@ -483,7 +483,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
 
         recognizer = SpeechRecognizerSetup.defaultSetup()
                 .setAcousticModel(new File(assetsDir, "model"))
-                .setDictionary(new File(assetsDir, "test2.dic"))
+                .setDictionary(new File(assetsDir, "final.dic"))
 
                 .setRawLogDir(assetsDir)
 
@@ -491,7 +491,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
         recognizer.addListener(this);
         Log.d("setupRecognizer", "Recognizer Initialized");
 
-        File languageModel = new File(assetsDir, "test2.lm.DMP");
+        File languageModel = new File(assetsDir, "final.lm.DMP");
         recognizer.addNgramSearch("lm", languageModel);
 
     }
