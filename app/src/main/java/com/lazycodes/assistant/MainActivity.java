@@ -386,9 +386,9 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
     public void onResult(Hypothesis hypothesis) {
         if (hypothesis != null) {
             dispTxt.setText("");
-            String res = hypothesis.getHypstr();
-            Log.d("AfterListening", "Final Output: " + res);
-            dispTxt.setText(res);
+            str = hypothesis.getHypstr();
+            Log.d("AfterListening", "Final Output: " + str);
+            dispTxt.setText(str);
 
             if (boolSaveMode) {
                 ShowAlertDialog();
@@ -419,8 +419,13 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
                                 sendCommandToArduino(pinNumber,action);
                             }
                             else{
-                                Toast.makeText(getApplicationContext(), "Command not found in Database", Toast.LENGTH_LONG).show();
-                                Log.d("AfterListening", "run: NOT FOUND IN DB");
+                                MainActivity.this.runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        Toast.makeText(getApplicationContext(), "Command not found in Database", Toast.LENGTH_LONG).show();
+                                        Log.d("Result", "run: NOT FOUND IN DB");
+                                    }
+                                });
                             }
                         }
                     }).start();
@@ -483,7 +488,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
 
         recognizer = SpeechRecognizerSetup.defaultSetup()
                 .setAcousticModel(new File(assetsDir, "model"))
-                .setDictionary(new File(assetsDir, "final.dic"))
+                .setDictionary(new File(assetsDir, "test2.dic"))
 
                 .setRawLogDir(assetsDir)
 
@@ -491,7 +496,7 @@ public class MainActivity extends AppCompatActivity implements RecognitionListen
         recognizer.addListener(this);
         Log.d("setupRecognizer", "Recognizer Initialized");
 
-        File languageModel = new File(assetsDir, "final.lm.DMP");
+        File languageModel = new File(assetsDir, "test2.lm.DMP");
         recognizer.addNgramSearch("lm", languageModel);
 
     }
